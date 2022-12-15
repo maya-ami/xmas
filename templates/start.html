@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Рефлексия</title>
+	<title>Сервис автоматической обработки договоров</title>
 	<!-- <link rel="stylesheet" type="text/css" href="../static/css/styles.css"> -->
 	<link rel="stylesheet" type="text/css">
 	<link rel="icon" href="{{ url_for('static', filename='favicon.png') }}">
@@ -52,14 +52,14 @@
 
 	<header>
 	<div class="container" align="center">
-		<h2 style="font-size:40px;">Отчет об обучении (рефлексия)</h2>
+		<h2 style="font-size:40px;">Сервис автоматической обработки договоров</h2>
 		<script type="text/javascript" src="123.js"></script>
 	</div>
 	</header>
 
 
 		<form action="{{ url_for('result')}}" method="POST" align="center" enctype=multipart/form-data>
-    <p style="font-size:30px;">Загрузите аудиозапись</p>
+    <p style="font-size:30px;">Загрузите документ</p>
 
   		<input type="file" name="file">
   		<input type="submit" value="Отправить">

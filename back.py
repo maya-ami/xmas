@@ -33,13 +33,19 @@ def result():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            subprocess.call(["vosk-transcriber -l ru -i {} -o {}.txt".format(filename, filename)], shell=True)
-            text = []
-            with open('{}.txt'.format(filename), 'r') as f:
-                for line in f:
-                    text.append(line)
+            text = ['Класс документа: Договор', 'Сроки: до 22 декабря 2022']
+            # прогноза класса тематики
+            # predict(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+            # карточка документа
+
+
+            # text = []
+            # with open('{}'.format(os.path.join(app.config['UPLOAD_FOLDER'], filename)), 'r') as f:
+                # for line in f:
+                    # text.append(line)
         else:
-            flash('Убедитесь, что отправляете файл формата wav, mp3 или mp4.')
+            flash('Убедитесь, что отправляете файл формата doc, docx или pdf.')
         # # Отправляем wav файл на ASR сервис
         # text = requests.get("http://0.0.0.0:5000/recognize_wav")
         return render_template('result.html', text=text)

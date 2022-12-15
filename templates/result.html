@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Персональные рекомендации</title>
+	<title>Сервис автоматической обработки договоров</title>
     <link rel="stylesheet" type="text">
 		<link rel="icon" href="{{ url_for('static', filename='favicon.png') }}">
 
@@ -51,13 +51,13 @@ background-color: #FFFFFF;}
 
 	<header>
 		<div class="w3-container" align="center">
-			<h2 style="font-size:50px;">Персональные рекомендации</h2>
+			<h2 style="font-size:50px;">Сервис автоматической обработки договоров</h2>
 		</div>
 	</header>
 
 <br>
 		<div class="w3-container" align="center">
-			<h3 style="font-size:30px;">Прогноз распознанного аудио</h3>
+			<h3 style="font-size:30px;">Прогноз тематики документа</h3>
 		</div>
 
 	<div class="w3-container" align="center">
@@ -71,8 +71,14 @@ background-color: #FFFFFF;}
 
 <div class="w3-container" align="center">
 
-	<button class="button">Супер!</button>
-	<button class="button2">Не интересует</button>
+	<form action="{{ url_for('start')}}" method="POST" align="center">
+			<!-- <input style="font-size:20px" type="submit" value="Назад"/> -->
+			<button class="button">На главную</button>
+			</form>
+
+
+	<!-- <button action="{{ url_for('start')}}" class="button">Ок</button> -->
+	<!-- <button class="button2">На главную</button> -->
 
 	</div>
 
