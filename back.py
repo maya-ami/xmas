@@ -6,7 +6,7 @@ import os
 
 
 UPLOAD_FOLDER = '/Users/mayabikmetova/xmas'
-ALLOWED_EXTENSIONS = {'doc', 'docx', 'pdf'}
+ALLOWED_EXTENSIONS = {'doc', 'docx', 'pdf', 'rtf'}
 
 app=Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
