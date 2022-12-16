@@ -32,14 +32,15 @@ from nltk.stem.snowball import RussianStemmer
 
 
 
+MYDIR = os.path.dirname(__file__)
 
-MODEL_FOLDER = '/Users/mayabikmetova/xmas/models'
-UPLOAD_FOLDER = '/Users/mayabikmetova/xmas/uploads'
+MODEL_FOLDER = 'models/'
+UPLOAD_FOLDER = 'uploads/'
 ALLOWED_EXTENSIONS = {'doc', 'docx', 'pdf', 'rtf'}
 
-data = pd.read_csv('/Users/mayabikmetova/xmas/DATA.csv')
+data = pd.read_csv(os.path.join(MYDIR, 'DATA.csv'))
 
-pipe = pickle.load(open('/Users/mayabikmetova/xmas/models/model.pkl', 'rb'))
+pipe = pickle.load(open(os.path.join(MYDIR,'models/model.pkl'), 'rb'))
 
 app=Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -198,24 +199,12 @@ def result():
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-            raw_text = extract_text(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            raw_text = extract_text(os.path.join(MYDIR + "/" + app.config['UPLOAD_FOLDER'], filename))
             clean_text = preprocess_no_lemm(raw_text)
             prediction, predict_proba, key_phrases = predict_with_keyphrases(clean_text)
-            # text = ['Класс документа: Договор']
-            # прогноза класса тематики
-            # predict(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-            # вывод интерпретации
-
-
-            # text = []
-            # with open('{}'.format(os.path.join(app.config['UPLOAD_FOLDER'], filename)), 'r') as f:
-                # for line in f:
-                    # text.append(line)
         else:
             flash('Убедитесь, что отправляете файл формата doc, docx или pdf.')
-        # # Отправляем wav файл на ASR сервис
-        # text = requests.get("http://0.0.0.0:5000/recognize_wav")
         return render_template('result.html', prediction=prediction,
                             predict_proba=predict_proba, key_phrases=', '.join(key_phrases))
 
