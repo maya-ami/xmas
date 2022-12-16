@@ -1,5 +1,5 @@
 import subprocess
-from subprocess import PIPE, Popen
+from subprocess import Popen, PIPE
 from flask import Flask, request, redirect, render_template, flash
 from werkzeug.utils import secure_filename
 import os
@@ -11,7 +11,6 @@ import json
 import os
 import re
 import docx
-import subprocess
 
 from sklearn.ensemble import RandomForestClassifier
 
@@ -51,6 +50,11 @@ class FileTypeError(Exception):
     def __init__(self, msg='Неверный тип файла! Допустимые типы: doc, docx, pdf, rtf.'):
         super().__init__(msg)
 
+def text_from_doc(filename):
+    p = Popen(['antiword', '-f', '{}'.format(filename)], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    output, err = p.communicate()
+    text = output.decode('utf-8')
+    return text
 
 def text_from_docx(filename):
     doc = docx.Document(filename)
@@ -88,7 +92,7 @@ def extract_text(path):
     Параметры:
         path: Путь к обрабатываемому файлу.
     """
-    func_dict = {'docx': text_from_docx, 'pdf': text_from_pdf, 'rtf': text_from_rtf}
+    func_dict = {'doc': text_from_doc, 'docx': text_from_docx, 'pdf': text_from_pdf, 'rtf': text_from_rtf}
 
     try:
         filename = os.path.basename(path)
