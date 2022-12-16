@@ -1,2 +1,2 @@
 [phase.setup]
-nixPkgs = ['...', antiword']
+nixPkgs = ["...", "antiword"]
