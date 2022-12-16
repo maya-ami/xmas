@@ -18,7 +18,6 @@ from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import cross_val_score, StratifiedKFold, KFold, train_test_split
 from sklearn.metrics import classification_report, accuracy_score, precision_score, recall_score, f1_score
 from sklearn.feature_extraction.text import TfidfVectorizer
-from xgboost import XGBClassifier
 import pickle
 
 from PyPDF2 import PdfReader
