@@ -47,11 +47,11 @@ background-color: #FFFFFF;}
 </style>
 
 </head>
-<body background="{{ url_for('static', filename='background_3.png') }}" style="background-size:100%">
+<body background="{{ url_for('static', filename='violet.jpg') }}" style="background-size:100%">
 
 	<header>
 		<div class="w3-container" align="center">
-			<h2 style="font-size:50px;">Сервис автоматической обработки договоров</h2>
+			<h2 style="font-size:50px;">Сервис автоматической <br> обработки договоров</h2>
 		</div>
 	</header>
 
@@ -61,8 +61,16 @@ background-color: #FFFFFF;}
 		</div>
 
 	<div class="w3-container" align="center">
-		{% for item in text %}
-			  <p style="color:black;font-size:25px;"<b>{{ item }}</b></p>
+				<p style="color:black;font-size:25px;"<b>Прогнозируемый тип договора: {{ prediction }}</b></p>
+				<p style="color:black;font-size:25px;"<b>Прогнозная вероятность: {{ predict_proba }}</b></p>
+	</div>
+
+<br>
+
+	<div class="w3-container" align="center">
+		<h4 style="font-size:30px;">В документе встречаются следующие типичные формулировки:</h4>
+		{% for phrase in key_phrases %}
+			  <p style="color:black;font-size:25px;"<b>{{ phrase }}</b></p>
 		{% endfor %}
 	</div>
 

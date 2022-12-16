@@ -3,15 +3,175 @@ from subprocess import PIPE, Popen
 from flask import Flask, request, redirect, render_template, flash
 from werkzeug.utils import secure_filename
 import os
+import pickle
+
+import pandas as pd
+import numpy as np
+import json
+import os
+import re
+import docx
+import subprocess
+
+from sklearn.ensemble import RandomForestClassifier
+
+from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import cross_val_score, StratifiedKFold, KFold, train_test_split
+from sklearn.metrics import classification_report, accuracy_score, precision_score, recall_score, f1_score
+from sklearn.feature_extraction.text import TfidfVectorizer
+from xgboost import XGBClassifier
+import pickle
+
+from PyPDF2 import PdfReader
+from striprtf.striprtf import rtf_to_text
+
+from pymystem3 import Mystem
+import nltk
+from nltk.tokenize import ToktokTokenizer
+from nltk.corpus import stopwords
+from nltk.stem.snowball import RussianStemmer
 
 
-UPLOAD_FOLDER = '/Users/mayabikmetova/xmas'
+
+
+MODEL_FOLDER = '/Users/mayabikmetova/xmas/models'
+UPLOAD_FOLDER = '/Users/mayabikmetova/xmas/uploads'
 ALLOWED_EXTENSIONS = {'doc', 'docx', 'pdf', 'rtf'}
+
+data = pd.read_csv('/Users/mayabikmetova/xmas/DATA.csv')
+
+pipe = pickle.load(open('/Users/mayabikmetova/xmas/models/model.pkl', 'rb'))
 
 app=Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SECRET_KEY'] = 'super secret key'
 
+
+class FileTypeError(Exception):
+    def __init__(self, msg='Неверный тип файла! Допустимые типы: doc, docx, pdf, rtf.'):
+        super().__init__(msg)
+
+
+def text_from_docx(filename):
+    doc = docx.Document(filename)
+    fullText = []
+
+    for para in doc.paragraphs:
+        fullText.append(para.text)
+
+    return '\n'.join(fullText)
+
+
+def text_from_pdf(filename):
+    reader = PdfReader(filename)
+
+    num_pages = reader.getNumPages()
+    text_pages = []
+
+    for i in range(num_pages):
+        page = reader.pages[i].extract_text()
+        text_pages.append(page)
+
+    return ''.join(text_pages)
+
+
+def text_from_rtf(filename):
+    with open(filename) as f:
+        content = f.read()
+        return rtf_to_text(content)
+
+
+def extract_text(path):
+    """
+    Функция для выделения текста из документы. Допустимые типы файлов: doc, docx, pdf, rtf.
+
+    Параметры:
+        path: Путь к обрабатываемому файлу.
+    """
+    func_dict = {'docx': text_from_docx, 'pdf': text_from_pdf, 'rtf': text_from_rtf}
+
+    try:
+        filename = os.path.basename(path)
+        extension = filename.split('.')[1]
+
+        print('Обрабатывается файл ', path)
+
+        if extension not in ['doc', 'docx', 'pdf', 'rtf']:
+            raise FileTypeError
+        else:
+            text = func_dict[extension](path)
+
+            return text
+    except Exception as e:
+        print(e)
+
+
+def preprocess_no_lemm(line):
+    """
+    Функция предобработки текста:
+    - очищает текст от цифр и лишних знаков препинания,
+    - удаляет короткие слова (состоящие из 1 буквы),
+    - удаяет стоп-слова,
+    - проводит лемматизацию
+    """
+    char_regex = re.compile(r'[^а-яa-z\s]')
+    line = char_regex.sub(' ', line.lower())
+
+    short_words = re.compile(r'\b[а-яa-z]{1}\b')
+    line = short_words.sub(' ', line.lower())
+
+    return line.strip()
+
+
+def phrases_by_class(doc_class):
+
+    # все классы
+    text = ''
+    for i in data['clean_text'].values:
+        text += i+' '
+
+    all_w = nltk.tokenize.word_tokenize(text.lower())
+    all_w_b = nltk.FreqDist(nltk.bigrams(w.lower() for w in all_w))
+    all_w_t = nltk.FreqDist(nltk.trigrams(w.lower() for w in all_w))# if w not in russian_stopwords))
+
+    allcl = []
+    for k,v in dict(all_w_t.most_common(200)).items():
+        allcl.append(' '.join(k))
+
+
+    # конкретный класс
+    text = ''
+    for i in data[data['class']==doc_class]['clean_text'].values:
+        text += i+' '
+
+    all_w = nltk.tokenize.word_tokenize(text.lower())
+    all_w_b = nltk.FreqDist(nltk.bigrams(w.lower() for w in all_w))
+    all_w_t = nltk.FreqDist(nltk.trigrams(w.lower() for w in all_w))# if w not in russian_stopwords))
+
+    cl = []
+    for k,v in dict(all_w_t.most_common(200)).items():
+        cl.append(' '.join(k))
+
+    diff_rent = set(cl) - set(allcl)
+    return diff_rent
+
+
+def predict_with_keyphrases(doc):
+    prediction, proba = pipe.predict([doc]), pipe.predict_proba([doc])
+    proba_val = round(max(proba[0])*100, 1)
+    print('Прогнозируемый тип договора: %s' %prediction[0])
+    print('Прогнозная вероятность {}%'.format(proba_val))
+    print('')
+    print('В документе встречаются следующие формулировки:')
+    print('')
+    key_phrases = []
+    for phrase in phrases_by_class(prediction[0]):
+        if phrase in doc:
+            print(phrase)
+            key_phrases.append(phrase)
+    print('**********************************************')
+    print('')
+    return prediction[0], proba_val, key_phrases
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -33,11 +193,15 @@ def result():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            text = ['Класс документа: Договор', 'Сроки: до 22 декабря 2022']
+
+            raw_text = extract_text(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            clean_text = preprocess_no_lemm(raw_text)
+            prediction, predict_proba, key_phrases = predict_with_keyphrases(clean_text)
+            # text = ['Класс документа: Договор']
             # прогноза класса тематики
             # predict(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-            # карточка документа
+            # вывод интерпретации
 
 
             # text = []
@@ -48,7 +212,8 @@ def result():
             flash('Убедитесь, что отправляете файл формата doc, docx или pdf.')
         # # Отправляем wav файл на ASR сервис
         # text = requests.get("http://0.0.0.0:5000/recognize_wav")
-        return render_template('result.html', text=text)
+        return render_template('result.html', prediction=prediction,
+                            predict_proba=predict_proba, key_phrases=key_phrases)
 
 @app.route('/download_results')
 def download_results():
