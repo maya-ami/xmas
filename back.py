@@ -213,7 +213,7 @@ def result():
         # # Отправляем wav файл на ASR сервис
         # text = requests.get("http://0.0.0.0:5000/recognize_wav")
         return render_template('result.html', prediction=prediction,
-                            predict_proba=predict_proba, key_phrases=key_phrases)
+                            predict_proba=predict_proba, key_phrases=', '.join(key_phrases))
 
 @app.route('/download_results')
 def download_results():
