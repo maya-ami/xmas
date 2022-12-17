@@ -72,11 +72,13 @@ background-color: #FFFFFF;}
 			  <p style="color:black;font-size:25px;"><i>{{ key_phrases }}</i></p>
 	</div>
 
-
+	{% if found_codes %}
 	<div class="w3-container" align="center">
 		<h4 style="font-size:30px;">Внимание! Упоминаются следующие нормативные акты:</h4>
 			  <p style="color:black;font-size:25px;">{{ found_codes }}</p>
 	</div>
+
+	{% endif %}
 
 	<div class="w3-container" align="center">
 		<h4 style="font-size:30px;">Схожесть с договорами этого же типа:</h4>
