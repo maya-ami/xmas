@@ -162,6 +162,7 @@ def preprocess_no_lemm(line):
 
     return line.strip()
 
+m = Mystem()
 def preprocess_w_lemm(line):
     """
     Функция предобработки текста:
@@ -308,4 +309,3 @@ def internalServerError(e):
 
 if __name__ == '__main__':
     app.run('0.0.0.0', debug=True)
-    m = Mystem()
