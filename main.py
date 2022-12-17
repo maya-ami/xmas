@@ -50,7 +50,6 @@ data = pd.read_csv(os.path.join(MYDIR, 'DATA_TT.csv'))
 pipe = pickle.load(open(os.path.join(MYDIR,'models/model.pkl'), 'rb'))
 
 toktok = ToktokTokenizer()
-m = Mystem()
 russian_stopwords = nltk.corpus.stopwords.words('russian')
 
 legal_codes = {'ГК РФ': 'Гражданский кодекс РФ',
@@ -171,6 +170,7 @@ def preprocess_w_lemm(line):
     - удаяет стоп-слова,
     - проводит лемматизацию
     """
+    m = Mystem()
     char_regex = re.compile(r'[^а-яa-z]')
     line = char_regex.sub(' ', line.lower())
 
