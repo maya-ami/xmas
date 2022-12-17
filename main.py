@@ -290,12 +290,6 @@ def result():
                             predict_proba=predict_proba, key_phrases=', '.join(key_phrases),
                             found_codes=', '.join(found_codes), typicality=typicality)
 
-@app.route('/download_results')
-def download_results():
-    return send_file('Final.csv',
-                     mimetype='text/csv',
-                     attachment_filename='Final.csv',
-                     as_attachment=True)
 
 
 @app.errorhandler(500)
