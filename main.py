@@ -196,7 +196,7 @@ def result():
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file.save(os.path.join(MYDIR + "/" + app.config['UPLOAD_FOLDER'], filename))
 
             raw_text = extract_text(os.path.join(MYDIR + "/" + app.config['UPLOAD_FOLDER'], filename))
             clean_text = preprocess_no_lemm(raw_text)
