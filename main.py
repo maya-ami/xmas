@@ -24,7 +24,7 @@ import pickle
 from PyPDF2 import PdfReader
 from striprtf.striprtf import rtf_to_text
 
-from pymystem3 import Mystem
+import pymorphy2
 import nltk
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -50,6 +50,7 @@ data = pd.read_csv(os.path.join(MYDIR, 'DATA_TT.csv'))
 pipe = pickle.load(open(os.path.join(MYDIR,'models/model.pkl'), 'rb'))
 
 toktok = ToktokTokenizer()
+morph = pymorphy2.MorphAnalyzer()
 russian_stopwords = nltk.corpus.stopwords.words('russian')
 
 legal_codes = {'ГК РФ': 'Гражданский кодекс РФ',
@@ -162,7 +163,6 @@ def preprocess_no_lemm(line):
 
     return line.strip()
 
-m = Mystem()
 def preprocess_w_lemm(line):
     """
     Функция предобработки текста:
@@ -181,7 +181,7 @@ def preprocess_w_lemm(line):
     stemmed_str = []
     for i in tokenized:
         if i not in russian_stopwords:
-            lemma = m.lemmatize(i)[0]
+            lemma = morph.parse(i)[0].normal_form
             stemmed_str.append(str(lemma))
     return ' '.join(stemmed_str)
 
