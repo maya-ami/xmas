@@ -33,7 +33,7 @@ from nltk.stem.snowball import RussianStemmer
 pp = Popen(['pwd'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
 print(pp.communicate()[0].decode('utf-8'))
 
-pp = Popen(['cd && ls -a'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+pp = Popen(['ls /root/'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
 print(pp.communicate()[0].decode('utf-8'))
 
 os.enviorn['ANTIWORDHOME']="/usr/local/bin/antiword"
