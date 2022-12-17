@@ -25,6 +25,7 @@ from striprtf.striprtf import rtf_to_text
 
 from pymystem3 import Mystem
 import nltk
+nltk.download('punkt')
 from nltk.tokenize import ToktokTokenizer
 from nltk.corpus import stopwords
 from nltk.stem.snowball import RussianStemmer
