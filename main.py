@@ -87,7 +87,7 @@ class FileTypeError(Exception):
         super().__init__(msg)
 
 def text_from_doc(filename):
-    p = Popen(['antiword', '-f', '{}'.format(filename)], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    p = Popen(['/root/.local/bin/antiword', '-f', '{}'.format(filename)], stdin=PIPE, stdout=PIPE, stderr=PIPE)
     output, err = p.communicate()
     text = output.decode('utf-8')
     return text
@@ -170,7 +170,6 @@ def preprocess_w_lemm(line):
     - удаяет стоп-слова,
     - проводит лемматизацию
     """
-    m = Mystem()
     char_regex = re.compile(r'[^а-яa-z]')
     line = char_regex.sub(' ', line.lower())
 
@@ -309,3 +308,4 @@ def internalServerError(e):
 
 if __name__ == '__main__':
     app.run('0.0.0.0', debug=True)
+    m = Mystem()
