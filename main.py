@@ -36,7 +36,7 @@ print(pp.communicate()[0].decode('utf-8'))
 # pp = Popen(['ls /root/'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
 # print(pp.communicate()[0].decode('utf-8'))
 
-os.environ['ANTIWORDHOME']="/usr/local/bin/antiword"
+os.environ['ANTIWORDHOME']="/antiword"
 
 MYDIR = os.path.dirname(__file__)
 
@@ -47,6 +47,16 @@ ALLOWED_EXTENSIONS = {'doc', 'docx', 'pdf', 'rtf'}
 data = pd.read_csv(os.path.join(MYDIR, 'DATA.csv'))
 
 pipe = pickle.load(open(os.path.join(MYDIR,'models/model.pkl'), 'rb'))
+
+legal_codes = {'ГК РФ': 'Гражданский кодекс РФ',
+          'ТК РФ': 'Трудовой кодекс РФ',
+         'НК РФ': 'Налоговый кодекс РФ',
+         'КоАП РФ': 'Кодекс об административных правонарушениях РФ',
+         'УК РФ': 'Уголовный кодекс РФ',
+         'ГПК РФ': 'Гражданский процессуальный кодекс РФ',
+         'АПК РФ':'Арбитражный процессуальный кодекс РФ',
+         'ЖК РФ': 'Жилищный кодекс РФ',
+         'СК РФ': 'Семейный кодекс РФ'}
 
 app=Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -184,6 +194,15 @@ def predict_with_keyphrases(doc):
     print('')
     return prediction[0], proba_val, key_phrases
 
+def check_for_legal_codes(doc):
+    found_codes = []
+    for k, v in legal_codes.items():
+        if k.lower() in doc:
+            found_codes.append(v)
+
+    return found_codes
+
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -208,11 +227,13 @@ def result():
             raw_text = extract_text(os.path.join(MYDIR + "/" + app.config['UPLOAD_FOLDER'], filename))
             clean_text = preprocess_no_lemm(raw_text)
             prediction, predict_proba, key_phrases = predict_with_keyphrases(clean_text)
+            found_codes = check_for_legal_codes(clean_text)
 
         else:
             flash('Убедитесь, что отправляете файл формата doc, docx или pdf.')
         return render_template('result.html', prediction=prediction,
-                            predict_proba=predict_proba, key_phrases=', '.join(key_phrases))
+                            predict_proba=predict_proba, key_phrases=', '.join(key_phrases),
+                            found_codes=', '.join(found_codes))
 
 @app.route('/download_results')
 def download_results():
