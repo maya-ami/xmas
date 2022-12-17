@@ -31,10 +31,10 @@ from nltk.corpus import stopwords
 from nltk.stem.snowball import RussianStemmer
 
 pp = Popen(['pwd'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-print(pp.communicate().decode('utf-8'))
+print(pp.communicate()[0].decode('utf-8'))
 
 pp = Popen(['cd && ls -a'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-print(pp.communicate().decode('utf-8'))
+print(pp.communicate()[0].decode('utf-8'))
 
 os.enviorn['ANTIWORDHOME']="/usr/local/bin/antiword"
 
