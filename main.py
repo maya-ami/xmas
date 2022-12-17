@@ -36,7 +36,7 @@ print(pp.communicate()[0].decode('utf-8'))
 # pp = Popen(['ls /root/'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
 # print(pp.communicate()[0].decode('utf-8'))
 
-os.environ['ANTIWORDHOME']="/antiword"
+os.environ['ANTIWORDHOME']="./"
 
 MYDIR = os.path.dirname(__file__)
 
