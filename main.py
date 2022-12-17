@@ -45,9 +45,12 @@ MODEL_FOLDER = 'models/'
 UPLOAD_FOLDER = 'uploads/'
 ALLOWED_EXTENSIONS = {'doc', 'docx', 'pdf', 'rtf'}
 
-data = pd.read_csv(os.path.join(MYDIR, 'DATA.csv'))
-
+data = pd.read_csv(os.path.join(MYDIR, 'DATA_TT.csv'))
 pipe = pickle.load(open(os.path.join(MYDIR,'models/model.pkl'), 'rb'))
+
+toktok = ToktokTokenizer()
+m = Mystem()
+russian_stopwords = nltk.corpus.stopwords.words('russian')
 
 legal_codes = {'ГК РФ': 'Гражданский кодекс РФ',
           'ТК РФ': 'Трудовой кодекс РФ',
@@ -63,6 +66,21 @@ app=Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SECRET_KEY'] = 'super secret key'
 
+
+def create_lexica(fn):
+    data = pd.read_csv(fn)
+
+    lexica_dic = {}
+    for cl in data['class'].unique():
+        cur_df = data[(data['source']=='train') & (data['class']==cl)]
+
+        lexicon = set()
+        for text in cur_df['lemma_text']:
+            lexicon.update(set(text.split()))
+        lexica_dic[cl] = lexicon
+    return lexica_dic
+
+LEXICA = create_lexica('DATA_TT.csv')
 
 class FileTypeError(Exception):
     def __init__(self, msg='Неверный тип файла! Допустимые типы: doc, docx, pdf, rtf.'):
@@ -144,6 +162,27 @@ def preprocess_no_lemm(line):
 
     return line.strip()
 
+def preprocess_w_lemm(line):
+    """
+    Функция предобработки текста:
+    - очищает текст от цифр и лишних знаков препинания,
+    - удаляет короткие слова (состоящие из 1 буквы),
+    - удаяет стоп-слова,
+    - проводит лемматизацию
+    """
+    char_regex = re.compile(r'[^а-яa-z]')
+    line = char_regex.sub(' ', line.lower())
+
+    short_words = re.compile(r'\b[а-яa-z]{1}\b')
+    line = short_words.sub(' ', line.lower())
+
+    tokenized = toktok.tokenize(line)
+    stemmed_str = []
+    for i in tokenized:
+        if i not in russian_stopwords:
+            lemma = m.lemmatize(i)[0]
+            stemmed_str.append(str(lemma))
+    return ' '.join(stemmed_str)
 
 def phrases_by_class(doc_class):
 
@@ -203,6 +242,18 @@ def check_for_legal_codes(doc):
 
     return found_codes
 
+def check_typicality(doc, doc_class):
+    '''Наилучший результат достигается при использовании лемматизированных текстов'''
+    tokenized = set(doc.split())
+    uniq_percent = round(len(tokenized - LEXICA[doc_class])/len(tokenized) * 100, 1)
+
+    if uniq_percent < 30:
+        result = 'Уникальность текста составяет {}%. Типовой документ для класса "{}"'.format(uniq_percent, doc_class)
+    else:
+        result = 'Внимание! Уникальность - {}%. Высокая вероятность нетипичных условий.'.format(uniq_percent)
+
+    return result
+
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -227,14 +278,16 @@ def result():
 
             raw_text = extract_text(os.path.join(MYDIR + "/" + app.config['UPLOAD_FOLDER'], filename))
             clean_text = preprocess_no_lemm(raw_text)
+            lemmatized_text = preprocess_w_lemm(raw_text)
             prediction, predict_proba, key_phrases = predict_with_keyphrases(clean_text)
             found_codes = check_for_legal_codes(clean_text)
+            typicality = check_typicality(lemmatized_text, prediction)
 
         else:
             flash('Убедитесь, что отправляете файл формата doc, docx или pdf.')
         return render_template('result.html', prediction=prediction,
                             predict_proba=predict_proba, key_phrases=', '.join(key_phrases),
-                            found_codes=', '.join(found_codes))
+                            found_codes=', '.join(found_codes), typicality=typicality)
 
 @app.route('/download_results')
 def download_results():
