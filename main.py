@@ -1,3 +1,4 @@
+#!/usr/bin/env
 import subprocess
 from subprocess import Popen, PIPE
 from flask import Flask, request, redirect, render_template, flash
@@ -68,7 +69,7 @@ class FileTypeError(Exception):
         super().__init__(msg)
 
 def text_from_doc(filename):
-    p = Popen(['/opt/venv/bin/antiword', '-f', '{}'.format(filename)], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    p = Popen(['antiword', '-f', '{}'.format(filename)], stdin=PIPE, stdout=PIPE, stderr=PIPE)
     output, err = p.communicate()
     text = output.decode('utf-8')
     return text
