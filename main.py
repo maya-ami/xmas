@@ -30,7 +30,13 @@ from nltk.tokenize import ToktokTokenizer
 from nltk.corpus import stopwords
 from nltk.stem.snowball import RussianStemmer
 
+pp = Popen(['pwd'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+print(pp.communicate().decode('utf-8'))
 
+pp = Popen(['cd && ls -a'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+print(pp.communicate().decode('utf-8'))
+
+os.enviorn['ANTIWORDHOME']="/usr/local/bin/antiword"
 
 MYDIR = os.path.dirname(__file__)
 
